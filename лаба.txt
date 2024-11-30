@@ -1,0 +1,62 @@
+import re  # Імпортуємо модуль для роботи з регулярними виразами
+import gradio as gr  # Імпортуємо бібліотеку Gradio для створення веб-інтерфейсу
+
+# Функція для обробки тексту
+def highlight_letters(text):
+    # Знаходимо слова, які починаються з літер 'і', 'и', 'І', 'И' та виділяємо їх червоним кольором
+    highlighted_text = re.sub(r'\b([іИІи])(\S*)', r'<mark style="color:red">\1</mark>\2', text)
+    # Видаляємо виділення для літер, які стоять між двома пробілами
+    highlighted_text = re.sub(r'(?<=\s)<mark style="color:red">([іИІи])</mark>(?=\s)', r'\1', highlighted_text)
+    # Додаємо загальний стиль для тексту
+    highlighted_text = f'<div style="color: #000000;">{highlighted_text}</div>'
+    return highlighted_text  # Повертаємо оброблений текст
+
+# Створення інтерфейсу Gradio
+with gr.Blocks(css="""
+    .gradio-container {
+        background-color: #FFDAB9 !important; /* Задаємо пастельний помаранчевий колір для фону */
+    }
+    .gr-button {
+        background-color: #8B4513 !important; /* Задаємо коричневий колір для кнопки */
+        color: white !important; /* Робимо текст кнопки білим */
+        border: none !important; /* Видаляємо рамку у кнопки */
+        padding: 10px 20px !important; /* Додаємо внутрішні відступи для кнопки */
+        border-radius: 5px !important; /* Закруглюємо кути кнопки */
+        font-size: 16px !important; /* Встановлюємо розмір шрифту */
+        cursor: pointer !important; /* Додаємо стилізацію курсора як у кнопки */
+        transition: background-color 0.3s ease !important; /* Додаємо плавний ефект при зміні кольору кнопки */
+    }
+    .gr-button:hover {
+        background-color: #5A3310 !important; /* Змінюємо колір кнопки на темніший при наведенні */
+    }
+    textarea, input[type="text"] {
+        background-color: #D2B48C !important; /* Встановлюємо світло-коричневий фон для текстового поля */
+        border: 1px solid #8B4513 !important; /* Додаємо коричневу рамку для текстового поля */
+        color: black !important; /* Встановлюємо чорний колір тексту */
+    }
+""") as demo:  # Визначаємо блоковий інтерфейс Gradio із вказаним стилем CSS
+    gr.Markdown("""
+    <div style="text-align: center; color: #FF0000;">
+        <h1 style="color: #FF4500;">Виділення літер 'і', 'и', 'І' та 'И' на початку слів</h1>
+        <p style="color: #FF4500;">Введіть текст у поле нижче, і ми виділимо початкові літери 'і' та 'и' у кожному слові червоним кольором!</p>
+    </div>
+    """)  # Додаємо заголовок і опис до веб-інтерфейсу у форматі HTML із заданим стилем
+
+    with gr.Row():  # Додаємо горизонтальний рядок для елементів інтерфейсу
+        text_input = gr.Textbox(
+            label="Введіть текст",  # Мітка для текстового поля
+            placeholder="Введіть ваш текст тут...",  # Підказка для користувача
+            lines=5  # Висота текстового поля (кількість рядків)
+        )
+
+    highlighted_output = gr.HTML(
+        label="Результат"  # Мітка для відображення результату
+    )
+
+    gr.Button("Виділити літери").click(
+        fn=highlight_letters,  # Викликаємо функцію `highlight_letters`, коли натиснута кнопка
+        inputs=text_input,  # Передаємо текст із текстового поля як вхідний параметр
+        outputs=highlighted_output  # Виводимо результат у HTML-елемент
+    )
+
+demo.launch()  # Запускаємо веб-інтерфейс
